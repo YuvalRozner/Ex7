@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="imageGalleryApp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Gallery</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body ng-controller="ImageGalleryController as imgCtrl" class="bg-gray-100">
+  <div class="container mx-auto">
+    <!-- Main Image Display with Navigation Buttons -->
+    <div class="relative w-full flex justify-center">
+      <img ng-src="{{ imgCtrl.selectedImage }}" class="max-w-lg rounded shadow-lg my-8">
+      
+      <!-- Previous Button -->
+      <button ng-click="imgCtrl.prevImage()" class="absolute left-0 top-1/2 transform -translate-y-1/2 bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-full">
+        Previous
+      </button>
+
+      <!-- Next Button -->
+      <button ng-click="imgCtrl.nextImage()" class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-full">
+        Next
+      </button>
+    </div>
+    
+    <!-- Thumbnails -->
+    <div class="flex overflow-x-scroll pb-10 hide-scrollbar">
+      <div class="flex flex-nowrap lg:ml-40 md:ml-20 ml-10 ">
+        <div class="inline-block px-3" ng-repeat="image in imgCtrl.images">
+          <div class="w-48 max-w-xs overflow-hidden rounded-lg shadow-md bg-white">
+            <img ng-src="{{ image }}" class="w-full h-auto" ng-click="imgCtrl.selectImage(image)">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- AngularJS Script -->
+  <script>
+    angular.module('imageGalleryApp', []).controller('ImageGalleryController', function($scope, $http) {
+      var vm = this;
+      
+      vm.images = [];
+      vm.selectedImage = '';
+      vm.selectedIndex = 0;
+      
+      // Fetch images from Picsum
+      $http.get('https://picsum.photos/v2/list?page=2&limit=10')
+        .then(function(response) {
+          vm.images = response.data.map(img => img.download_url);
+          vm.selectedImage = vm.images[0]; // Default selection
+          vm.selectedIndex = 0;
+        });
+
+      // Function to set the selected image
+      vm.selectImage = function(image) {
+        vm.selectedImage = image;
+        vm.selectedIndex = vm.images.indexOf(image);
+      };
+      
+      // Function to go to the next image
+      vm.nextImage = function() {
+        if(vm.selectedIndex < vm.images.length - 1) {
+          vm.selectedIndex++;
+          vm.selectedImage = vm.images[vm.selectedIndex];
+        }
+      };
+
+      // Function to go to the previous image
+      vm.prevImage = function() {
+        if(vm.selectedIndex > 0) {
+          vm.selectedIndex--;
+          vm.selectedImage = vm.images[vm.selectedIndex];
+        }
+      };
+    });
+  </script>
+  
+  <!-- Tailwind CSS for hiding scrollbar -->
+  <style>
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+</body>
+</html>
